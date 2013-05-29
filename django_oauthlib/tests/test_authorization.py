@@ -11,7 +11,7 @@ from django_oauthlib.models import Client as _Client
 class AuthorizationViewTest(TestCase):
 
     def setUp(self):
-        user = User.objects.create(username='test')
+        user = User.objects.create_user('test', 'test@email', 'test')
         self.web_client = _Client.objects.create(
                 user=user,
                 response_type='code',
@@ -70,6 +70,7 @@ class AuthorizationViewTest(TestCase):
         })
         for params in valid_params:
             c = Client()
+            c.login(username='test', password='test')
             r = c.get(add_params_to_uri(self.auth, params.items()), follow=True)
             self.assertEqual(r.redirect_chain, [])
             self.assertEqual(r.status_code, 200)
@@ -105,6 +106,7 @@ class AuthorizationViewTest(TestCase):
         })
         for params in fatal_params:
             c = Client()
+            c.login(username='test', password='test')
             r = c.get(add_params_to_uri(self.auth, params.items()), follow=True)
             self.assertIn(self.error, r.redirect_chain.pop()[0])
             # TODO: why is this 405 here?
@@ -139,6 +141,7 @@ class AuthorizationViewTest(TestCase):
         })
         for params in invalid_params:
             c = Client()
+            c.login(username='test', password='test')
             r = c.get(add_params_to_uri(self.auth, params.items()), follow=True)
             self.assertIn(params.get('redirect_uri', 'https://localhost'),
                           r.redirect_chain.pop()[0])
