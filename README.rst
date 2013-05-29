@@ -1,7 +1,7 @@
 Django-OAuthLib
 ===============
 
-**This project will be merged into `django-oauth-toolkit`_**
+** This project will be merged into `django-oauth-toolkit`_ **
 
 Starting as a migration of the django decorator from `OAuthLib`_ this project
 will aim to become a full featured, secure, easy to use OAuth provider
