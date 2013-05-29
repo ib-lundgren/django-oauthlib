@@ -1,4 +1,9 @@
+from __future__ import absolute_import
+
 from oauthlib.oauth2 import RequestValidator
+
+from .models import Client
+from .utils import log
 
 
 class DjangoValidator(RequestValidator):
@@ -8,34 +13,32 @@ class DjangoValidator(RequestValidator):
     # Pre- and post-authorization.
 
     def validate_client_id(self, client_id, request, *args, **kwargs):
-        # Simple validity check, does client exist? Not banned?
-        pass
+        try:
+            request._client = Client.objects.get(client_id=client_id)
+            return True
+        except Client.DoesNotExist:
+            return False
 
     def validate_redirect_uri(self, client_id, redirect_uri, request, *args, **kwargs):
-        # Is the client allowed to use the supplied redirect_uri? i.e. has
-        # the client previously registered this EXACT redirect uri.
-        pass
+        return redirect_uri in request._client.redirect_uris
 
     def get_default_redirect_uri(self, client_id, request, *args, **kwargs):
-        # The redirect used if none has been supplied.
-        # Prefer your clients to pre register a redirect uri rather than
-        # supplying one on each authorization request.
-        pass
+        # TODO: define default on model
+        uris = request._client.redirect_uris.split(' ')
+        return uris[0] if uris else None
 
     def validate_scopes(self, client_id, scopes, client, request, *args, **kwargs):
-        # Is the client allowed to access the requested scopes?
-        pass
+        if scopes is None:
+            return False
+        return all(map(lambda s: s in request._client.scopes, scopes))
 
     def get_default_scopes(self, client_id, request, *args, **kwargs):
-        # Scopes a client will authorize for if none are supplied in the
-        # authorization request.
-        pass
+        # TODO: define default on model
+        scopes = request._client.scopes.split(' ')
+        return scopes[0] if scopes else None
 
     def validate_response_type(self, client_id, response_type, client, request, *args, **kwargs):
-        # Clients should only be allowed to use one type of response type, the
-        # one associated with their one allowed grant type.
-        # In this case it must be "code".
-        pass
+        return request._client.response_type == response_type
 
     # Post-authorization
 
